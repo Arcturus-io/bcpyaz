@@ -31,11 +31,11 @@ def bcp(sql_table, flat_file, batch_size):
     else:
         auth = ['-U', sql_table.username, '-P', sql_table.password]
     full_table_string = \
-        f'{sql_table.database}.{sql_table.schema}.{sql_table.table}'
+        f'{sql_table.schema}.{sql_table.table}'
     try:
         bcp_command = ['bcp', full_table_string, 'IN', flat_file.path, '-f',
                        flat_file.get_format_file_path(), '-S',
-                       sql_table.server, '-b', str(batch_size)] + auth
+                       sql_table.server, '-d', sql_table.database, '-b', str(batch_size)] + auth
     except Exception as e:
         args_clean = list()
         for arg in e.args:
@@ -46,7 +46,7 @@ def bcp(sql_table, flat_file, batch_size):
         e.args = tuple(args_clean)
         raise e
     if flat_file.file_has_header_line:
-        bcp_command += ['-F', '2']
+        bcp_command += ['-F', '2', '-q', '-k']
     result = subprocess.run(bcp_command, stderr=subprocess.PIPE)
     if result.returncode:
         raise Exception(
@@ -78,7 +78,7 @@ def sqlcmd(server, database, command, username=None, password=None):
         auth = ['-U', username, '-P', password]
     command = 'set nocount on;' + command
     sqlcmd_command = ['sqlcmd', '-S', server, '-d', database, '-b'] + auth + \
-                     ['-s,', '-W', '-Q', command]
+                     ['-I', '-s,', '-W', '-Q', command]
     result = subprocess.run(sqlcmd_command, stdout=subprocess.PIPE,
                             stderr=subprocess.PIPE)
     if result.returncode:

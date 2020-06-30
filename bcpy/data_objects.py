@@ -132,7 +132,7 @@ class FlatFile(DataObject):
             map(lambda x: f'[{x}] nvarchar(max)', self.columns))
         sql_command = f"if object_id('[{schema_name}].[{table_name}]', 'U') " \
             f"is not null drop table [{schema_name}].[{table_name}];" \
-            f'create table [{schema_name}].[{table_name}] ({sql_cols});'
+            f'create table [{schema_name}].[{table_name}] ({sql_cols}) with (heap);'
         return sql_command
 
     def to_sql(self, sql_table, use_existing_sql_table=False,
