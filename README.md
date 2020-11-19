@@ -43,6 +43,12 @@ Then instead of using the bcp command line utility, the CSV file will be copied 
 [COPY](https://docs.microsoft.com/en-us/sql/t-sql/statements/copy-into-transact-sql) will be used to 
 transfer it from there into the Synapse Database.
 
+You may need to 
+```
+GRANT ADMINISTER DATABASE BULK OPERATIONS TO <user>
+```
+on Synapse to the user that is connecting.
+
 ## How Can I Install It?
 
 1. Make sure your computeer has the [requirements](#requirements).
