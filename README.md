@@ -31,6 +31,18 @@
 
 This package is a wrapper for Microsoft's SQL Server bcp utility. Current database drivers available in Python are not fast enough for transferring millions of records (yes, I have tried [pyodbc fast_execute_many](https://github.com/mkleehammer/pyodbc/wiki/Features-beyond-the-DB-API#fast_executemany)). Despite the IO hits, the fastest option by far is saving the data to a CSV file in file system (preferably /dev/shm tmpfs) and using the bcp utility to transfer the CSV file to SQL Server.
 
+### Azure Synapse / Blob extensions
+
+If the following env vars are set (with examples):
+```
+  AZURE_STORAGE_CONNECTION_STRING="DefaultEndpointsProtocol=https;AccountName=myblogstorageacct;AccountKey=jhadsfas235876dha90/17891hfh25125/12h2udfjs347512==;EndpointSuffix=core.windows.net"
+  AZURE_TEMP_STORAGE_CONTAINER="tempcontainer"
+```
+
+Then instead of using the bcp command line utility, the CSV file will be copied to the Azure Storage Blob temporarily and 
+[COPY](https://docs.microsoft.com/en-us/sql/t-sql/statements/copy-into-transact-sql) will be used to 
+transfer it from there into the Synapse Database.
+
 ## How Can I Install It?
 
 1. Make sure your computeer has the [requirements](#requirements).
