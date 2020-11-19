@@ -105,7 +105,7 @@ def bcpaz(sql_table, flat_file, azure_storage_connection_string, azure_temp_stor
         account_key=blob_conn['AccountKey'],
         container_name=container_name,
         permission=perms,
-        expiry=datetime.now() + timedelta(hours=1))
+        expiry=datetime.now() + timedelta(hours=24))
 
     sql = """
     COPY INTO [{schema_name}].[{table_name}]
@@ -118,10 +118,8 @@ def bcpaz(sql_table, flat_file, azure_storage_connection_string, azure_temp_stor
         FIRSTROW=2, -- Skip header
         ROWTERMINATOR='0X0A',
         ENCODING = 'UTF8',
-        -- DATEFORMAT = 'ymd',
         MAXERRORS = 0,
         ERRORFILE = '/errorsfolder_{blob_name}' --path starting from the storage container
-        --IDENTITY_INSERT = 'ON'
     )
     """.format(
         table_name=sql_table.table,
@@ -130,6 +128,8 @@ def bcpaz(sql_table, flat_file, azure_storage_connection_string, azure_temp_stor
         sas=sas
         )
 
+    # Tell Synapse to read the Blob into Table
+
     sqlcmd(
         server=sql_table.server,
         database=sql_table.database,
@@ -137,6 +137,9 @@ def bcpaz(sql_table, flat_file, azure_storage_connection_string, azure_temp_stor
         username=sql_table.username,
         password=sql_table.password)
 
+    # Delete the temp blob
+
+    blob.delete_blob()
 
 
 def sqlcmd(server, database, command, username=None, password=None):
