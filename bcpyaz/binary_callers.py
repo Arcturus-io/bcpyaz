@@ -1,9 +1,12 @@
 import subprocess
+import os
 from io import StringIO
 import hashlib
 
 import pandas as pd
+from datetime import datetime, timedelta
 
+from azure.storage.blob import BlobClient, generate_container_sas, BlobSasPermissions
 
 def sha512(text, encoding='utf-8'):
     """Converts an input string to its sha512 hash
@@ -51,6 +54,89 @@ def bcp(sql_table, flat_file, batch_size):
     if result.returncode:
         raise Exception(
             f'Bcp command failed. Details:\n{result}')
+
+def parse_blob_connection_str(conn_str):
+    """
+    :param conn_str: A Blob Storage connection str
+    :type conn_str: str
+    Returns a dict of the components making up the string
+    """
+    conn_str = conn_str.rstrip(";")
+    conn_settings = [s.split("=", 1) for s in conn_str.split(";")]
+    if any(len(tup) != 2 for tup in conn_settings):
+        raise ValueError("Connection string is either blank or malformed.")
+    return dict(conn_settings)
+
+def bcpaz(sql_table, flat_file, azure_storage_connection_string, azure_temp_storage_container):
+    """Runs the bcp command to transfer the input flat file to the input
+    SQL Server table.
+    :param sql_table: The destination Sql Server table
+    :type sql_table: SqlTable
+    :param flat_file: Source flat file
+    :type flat_file: FlatFile
+    :param batch_size: Batch size (chunk size) to send to SQL Server
+    :type batch_size: int
+    :param azure_storage_connection_string: Azure String connection string
+    :type azure_storage_connection_string: string
+    :param azure_temp_storage_container: Name of a Blob Container to use for temp folder
+    :type azure_temp_storage_container: string
+    """
+    # First upload flat_file.path to Azure blob storage
+    conn_string = azure_storage_connection_string
+    if conn_string[-1] != '/':
+        conn_string += '/'
+
+    container_name = azure_temp_storage_container
+
+    blob_name = os.path.basename(flat_file.path)
+    
+    blob = BlobClient.from_connection_string(conn_str=conn_string, container_name=container_name, blob_name=blob_name)
+
+    with open(flat_file.path, "rb") as data:
+        blob.upload_blob(data)
+
+    # Generate Shared Access Secret for Synapse to access the container
+
+    blob_conn = parse_blob_connection_str(conn_string)
+
+    perms = BlobSasPermissions(read=True, add=True, create=True, write=True, delete=True, delete_previous_version=True, tag=True)
+
+    sas = generate_container_sas(blob_conn['AccountName'], 
+        account_key=blob_conn['AccountKey'],
+        container_name=container_name,
+        permission=perms,
+        expiry=datetime.now() + timedelta(hours=1))
+
+    sql = """
+    COPY INTO [{schema_name}].[{table_name}]
+    FROM 'https://arcturusdevstgacc.blob.core.windows.net/test/{blob_name}'
+    WITH (
+        FILE_TYPE = 'CSV',
+        CREDENTIAL=(IDENTITY= 'Shared Access Signature', SECRET='{sas}'),
+        FIELDQUOTE = '"',
+        FIELDTERMINATOR=',',
+        FIRSTROW=2, -- Skip header
+        ROWTERMINATOR='0X0A',
+        ENCODING = 'UTF8',
+        -- DATEFORMAT = 'ymd',
+        MAXERRORS = 0,
+        ERRORFILE = '/errorsfolder_{blob_name}' --path starting from the storage container
+        --IDENTITY_INSERT = 'ON'
+    )
+    """.format(
+        table_name=sql_table.table,
+        schema_name=sql_table.schema,
+        blob_name=blob_name,
+        sas=sas
+        )
+
+    sqlcmd(
+        server=sql_table.server,
+        database=sql_table.database,
+        command=sql,
+        username=sql_table.username,
+        password=sql_table.password)
+
 
 
 def sqlcmd(server, database, command, username=None, password=None):

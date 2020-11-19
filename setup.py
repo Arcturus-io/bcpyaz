@@ -4,14 +4,14 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setuptools.setup(
-    name="bcpy",
-    version="0.1.8",
-    author="John Shojaei",
-    author_email="titan550@gmail.com",
-    description="Microsoft SQL Server bcp (Bulk Copy) wrapper",
+    name="bcpyaz",
+    version="0.1.0",
+    author="Arcturus",
+    author_email="dan@arcturus.io",
+    description="Microsoft SQL Server bcp (Bulk Copy) wrapper with Azure Synapse Blob alternative",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/titan550/bcpy",
+    url="https://github.com/Arcturus-io/bcpyaz",
     packages=setuptools.find_packages(),
     keywords="bcp mssql",
     classifiers=[

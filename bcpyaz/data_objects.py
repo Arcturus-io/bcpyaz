@@ -1,7 +1,7 @@
 import csv
 import os
 
-from .binary_callers import bcp, sqlcmd
+from .binary_callers import bcp, bcpaz, sqlcmd
 from .format_file_builder import FormatFile
 from .tmp_file import TemporaryFile
 
@@ -157,7 +157,16 @@ class FlatFile(DataObject):
                 ),
                 username=sql_table.username,
                 password=sql_table.password)
-        bcp(sql_table=sql_table, flat_file=self, batch_size=batch_size)
+        
+        AZURE_STORAGE_CONNECTION_STRING = os.environ.get("AZURE_STORAGE_CONNECTION_STRING", "")
+        AZURE_TEMP_STORAGE_CONTAINER = os.environ.get("AZURE_TEMP_STORAGE_CONTAINER", "")
+
+        if AZURE_TEMP_STORAGE_CONTAINER == "" or AZURE_STORAGE_CONNECTION_STRING == "":
+            bcp(sql_table=sql_table, flat_file=self, batch_size=batch_size)
+        else:
+            bcpaz(sql_table=sql_table, flat_file=self, 
+                azure_storage_connection_string=AZURE_STORAGE_CONNECTION_STRING,
+                azure_temp_storage_container=AZURE_TEMP_STORAGE_CONTAINER)
 
     @property
     def columns(self):

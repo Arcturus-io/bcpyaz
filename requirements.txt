@@ -1,4 +1,4 @@
 pytest
 pandas
 numpy
-
+azure-storage-blob
