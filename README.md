@@ -1,31 +1,4 @@
-# bcpy
-
-<table>
-<tr>
-  <td>Latest Release</td>
-  <td>
-    <a href="https://pypi.org/project/bcpy/">
-    <img src="https://img.shields.io/pypi/v/bcpy.svg" alt="latest release" />
-    </a>
-  </td>
-</tr>
-<tr>
-  <td>License</td>
-  <td>
-    <a href="https://github.com/titan550/bcpy/blob/master/LICENSE">
-    <img src="https://img.shields.io/pypi/l/bcpy.svg" alt="license" />
-    </a>
-</td>
-</tr>
-<tr>
-  <td>Build Status (master)</td>
-  <td>
-    <a href="https://travis-ci.org/titan550/bcpy">
-    <img src="https://api.travis-ci.org/titan550/bcpy.svg?branch=master" alt="travis build status" />
-    </a>
-  </td>
-</tr>
-</table>
+# bcpyaz
 
 ## What is it?
 
@@ -43,13 +16,26 @@ Then instead of using the bcp command line utility, the CSV file will be copied 
 [COPY](https://docs.microsoft.com/en-us/sql/t-sql/statements/copy-into-transact-sql) will be used to 
 transfer it from there into the Synapse Database.
 
+You may need to 
+```
+GRANT ADMINISTER DATABASE BULK OPERATIONS TO <user>
+```
+on Synapse to the user that is connecting.
+
+The sqlcmd utility will still be required.
+
 ## How Can I Install It?
 
-1. Make sure your computeer has the [requirements](#requirements).
-1. You can download and install this package from PyPI repository by running the command below.
+Make sure your computeer has the [requirements](#requirements).
 
+Install locally from a git clone:
 ```bash
-pip install bcpy
+pip install -e .
+```
+
+or via requirements.txt:
+```
+-e git+https://git@github.com/Arcturus-io/bcpyaz.git#egg=bcpyaz
 ```
 
 ## Examples
