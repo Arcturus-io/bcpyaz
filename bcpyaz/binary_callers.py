@@ -125,6 +125,7 @@ def bcpaz(sql_table, flat_file, azure_storage_connection_string, azure_temp_stor
         table_name=sql_table.table,
         schema_name=sql_table.schema,
         blob_name=blob_name,
+        container_name=container_name,
         sas=sas
         )
 
