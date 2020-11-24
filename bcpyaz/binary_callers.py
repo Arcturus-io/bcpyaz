@@ -109,7 +109,7 @@ def bcpaz(sql_table, flat_file, azure_storage_connection_string, azure_temp_stor
 
     sql = """
     COPY INTO [{schema_name}].[{table_name}]
-    FROM 'https://arcturusdevstgacc.blob.core.windows.net/test/{blob_name}'
+    FROM 'https://arcturusdevstgacc.blob.core.windows.net/{container_name}/{blob_name}'
     WITH (
         FILE_TYPE = 'CSV',
         CREDENTIAL=(IDENTITY= 'Shared Access Signature', SECRET='{sas}'),
