@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="bcpyaz",
-    version="0.1.0",
+    version="0.2.0",
     author="Arcturus",
     author_email="dan@arcturus.io",
     description="Microsoft SQL Server bcp (Bulk Copy) wrapper with Azure Synapse Blob alternative",
